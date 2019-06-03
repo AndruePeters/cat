@@ -1,10 +1,22 @@
 #!/usr/bin/env python3
+
+# Author: Andrue Peters
+# Date: 6/2/19
+# Description:  Develops test data for evaluating EBI for 3 parameter information function
+#               Allows user to vary theta, a, b, c, and the standard error for the ebi function
+#                   and outputs the information to a file
+#
+#               Follow the menu upon running.
+
+
 import scipy.special as special
 from scipy.integrate import quad
-from numpy import sqrt, power as pow, log, exp
+from numpy import sqrt, power as pow, log, exp, linspace
 from typing import Callable
 
-# return information given theta, a, b, and c
+#########################################################################
+#       Returns the information of the parameters                       #
+#########################################################################
 def information(theta: float, a: float, b: float, c: float) -> float:
     numer = (2.89 * pow(a, 2)) * (1 - c)
     denom1 = c + exp( (1.7 * a) * (theta - b))
@@ -12,40 +24,179 @@ def information(theta: float, a: float, b: float, c: float) -> float:
     return (numer) / (denom1 * denom2)
 
 
-# returns the theta* value
+#########################################################################
+#       Returns theta*                                                  #
+#########################################################################
 def theta_star(a: float, b: float, c: float) -> float:
     return (b + (1/1.7) * log((1 + sqrt(1 + 8*c))/2))
 
+#########################################################################
+#       Calculates the EBI weight                                       #
+#########################################################################
 def ebi_weight(theta: float, a: float, b: float, c:float, std_err: float) -> float:
     lb = theta - 2 * std_err
     ub = theta + 2 * std_err
     return quad(information, lb, ub, args=(a, b, c))
 
-
+#########################################################################
+#       Returns the final EBI                                           #
+#########################################################################
 def ebi(theta_hat: float, a: float, b: float, c: float, std_err: float) -> float:
     ts = theta_star(a, b, c)
     weight = ebi_weight(theta_hat, a, b, c, std_err)[0]
-    return (1 + (1/information(ts, a, b, c))) * weight
+    info_ts = information(ts, a, b, c)
+    if info_ts == 0:
+        info_ts = 0.00000000001
+    return (1 + (1/info_ts)) * weight
 
 
-
-
-def main():
-    it = float( input("θ:\t"))
+#########################################################################
+#       Holds all values but theta constant and generates test data     #
+#########################################################################
+def vary_theta(file_name: str):
+    print("θ varies\n")
+    lb = float(input("Lower bound:\t"))
+    ub = float(input("Upper bound θ:\t"))
+    num = int(input ("Number of steps:\t"))
     a = float( input("a:\t"))
     b = float( input("b:\t"))
     c = float( input("c:\t"))
-    se = float (input("standard error:\t"))
-    ts = theta_star(a, b, c)
-    weight = ebi_weight(it, a, b, c, se)
-    ebi_ = ebi(it, a, b, c, se)
+    se = float (input("std err:\t"))
+    vals = linspace(lb, ub, num,endpoint=True)
+    f = open(file_name, "w")
+    write_header(f)
+    for x in vals:
+        info = information(x, a, b, c)
+        eb = ebi(x, a, b, c, se)
+        f.write(f"{x},{a},{b},{c},{se},{info},{eb}\n")
+    f.close()
+
+#########################################################################
+#       Holds all values but a constant and generates test data         #
+#########################################################################
+def vary_a(file_name: str):
+    print("a varies\n")
+    theta = float(input("θ:\t"))
+    lb = float(input("Lower bound:\t"))
+    ub = float(input("Upper bound:\t"))
+    num = int(input("Number of steps:\t"))
+    b = float( input("b:\t"))
+    c = float( input("c:\t"))
+    se = float (input("std err:"))
+    vals = linspace(lb, ub, num,endpoint=True)
+    f = open(file_name, "w")
+    write_header(f)
+    for x in vals:
+        info = information(theta, x, b, c)
+        eb = ebi(theta, x, b, c, se)
+        f.write(f"{theta},{x},{b},{c},{se},{info},{eb}\n")
+    f.close()
 
 
-    print(f"θ*:\t{ts}\n")
-    print(f"weight:\t\t\t{weight[0]}\n")
-    print(f"integration error:\t{weight[1]}")
-    print(f"\nEBI:\t{ebi_}")
-    exit()
+#########################################################################
+#       Holds all values but b constant and generates test data         #
+#########################################################################
+def vary_b(file_name: str):
+    print("b varies\n")
+    theta = float(input("θ:\t"))
+    a = float( input("a:\t"))
+    lb = float(input("Lower bound:\t"))
+    ub = float(input("Upper bound:\t"))
+    num = int(input("Number of steps:\t"))
+    c = float( input("c:\t"))
+    se = float (input("std err:"))
+    vals = linspace(lb, ub, num,endpoint=True)
+    f = open(file_name, "w")
+    write_header(f)
+    for x in vals:
+        info = information(theta, a, x, c)
+        eb = ebi(theta, a, x, c, se)
+        f.write(f"{theta},{a},{x},{c},{se},{info},{eb}\n")
+    f.close()
+
+#########################################################################
+#       Holds all values but c constant and generates test data         #
+#########################################################################
+def vary_c(file_name: str):
+    print("c varies\n")
+    theta = float(input("θ:\t"))
+    a = float( input("a:\t"))
+    b = float( input("b:\t"))
+    lb = float(input("Lower bound:\t"))
+    ub = float(input("Upper bound:\t"))
+    num = int(input("Number of steps:\t"))
+    se = float (input("std err:"))
+    vals = linspace(lb, ub, num,endpoint=True)
+    f = open(file_name, "w")
+    write_header(f)
+    for x in vals:
+        info = information(theta, a, b, x)
+        eb = ebi(theta, a, b, x, se)
+        f.write(f"{theta},{a},{b},{x},{se},{info},{eb}\n")
+    f.close()
+
+#########################################################################
+#       Holds all values but standard error constant                    #
+#       and generates test data                                         #
+#########################################################################
+def vary_se(file_name: str):
+    print("std err varies\n")
+    theta = float(input("θ:\t"))
+    a = float( input("a:\t"))
+    b = float( input("b:\t"))
+    c = float( input("c:\t"))
+    lb = float(input("Lower bound:\t"))
+    ub = float(input("Upper bound:\t"))
+    num = int(input("Number of steps:\t"))
+    vals = linspace(lb, ub, num,endpoint=True)
+    f = open(file_name, "w")
+    write_header(f)
+    for x in vals:
+        info = information(theta, a, b, c)
+        eb = ebi(theta, a, b, c, x)
+        f.write(f"{theta},{a},{b},{c},{x},{info},{eb}\n")
+    f.close()
+
+#########################################################################
+#       Helper function. Writes the first line of csv file              #
+#       *** Assumes file_obj has already been opened                    #
+#########################################################################
+def write_header(file_obj):
+    file_obj.write("Theta, a, b, c, std err, info, ebi\n")
+
+#########################################################################
+#       Helper function. Prints the menu.                               #
+#########################################################################
+def print_menu():
+    print("\n\nEnter the the menu item number.\n")
+    print("1. θ varies")
+    print("2. a varies")
+    print("3. b varies")
+    print("4. c varies")
+    print("5. std_err varies")
+    print("0. exit")
+
+def main():
+    choice = 1
+    while choice != 0:
+        print_menu()
+        choice = int(input("menu number:\t"))
+        file_name = input("file name (include .csv):\t")
+        if choice == 0:
+            return
+        if choice == 1:
+            vary_theta(file_name)
+        elif choice == 2:
+            vary_a(file_name)
+        elif choice == 3:
+            vary_b(file_name)
+        elif choice == 4:
+            vary_c(file_name)
+        elif choice == 5:
+            vary_se(file_name)
+        else:
+            print(f"{choice} is an invalid response")
+        print("Completed.")
 
 
 main()
