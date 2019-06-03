@@ -31,7 +31,7 @@ def theta_star(a: float, b: float, c: float) -> float:
     return (b + (1/1.7) * log((1 + sqrt(1 + 8*c))/2))
 
 #########################################################################
-#       Calculates the EBI weight                                       #
+#       Calculates the EBI weight using Guassian quadrature             #
 #########################################################################
 def ebi_weight(theta: float, a: float, b: float, c:float, std_err: float) -> float:
     lb = theta - 2 * std_err
