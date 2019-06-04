@@ -28,7 +28,7 @@ def information(theta: float, a: float, b: float, c: float) -> float:
 #       Returns theta*                                                  #
 #########################################################################
 def theta_star(a: float, b: float, c: float) -> float:
-    return (b + (1/1.7) * log((1 + sqrt(1 + 8*c))/2))
+    return (b + (1/(1.78 * a)) * log((1 + sqrt(1 + 8*c))/2))
 
 #########################################################################
 #       Calculates the EBI weight using Guassian quadrature             #
