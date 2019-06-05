@@ -13,6 +13,8 @@ import scipy.special as special
 from scipy.integrate import quad
 from numpy import sqrt, power as pow, log, exp, linspace
 from typing import Callable
+import random as rand
+import matplotlib.pyplot as plt
 
 #########################################################################
 #       Returns the information of the parameters                       #
@@ -157,6 +159,61 @@ def vary_se(file_name: str):
         f.write(f"{theta},{a},{b},{c},{x},{info},{eb}\n")
     f.close()
 
+
+#########################################################################
+#       Holds theta, and se, but varries a, b, and c                    #
+#########################################################################
+def vary_a_b_c(file_name: str):
+    print("Parameters a, b, and c all vary")
+    theta = float( input("θ:\t"))
+    se = float (input("std_err:\t"))
+    lb_a = float (input ("Lower bound of a:\t"))
+    ub_a = float (input ("Upper bound of a:\t"))
+    lb_b = float (input ("Lower bound of b:\t"))
+    ub_b = float (input ("Upper bound of b:\t"))
+    lb_c = float (input ("Lower bound of c:\t"))
+    ub_c = float (input ("Upper bound of c:\t"))
+    num = int( input ("Number of steps:\t"))
+    vals_a = linspace(lb_a, ub_a, num, endpoint=True)
+    vals_b = linspace(lb_b, ub_b, num, endpoint=True)
+    vals_c = linspace(lb_c, ub_c, num, endpoint=True)
+    f = open(file_name, "w")
+    write_header(f)
+    for a in vals_a:
+        for b in vals_b:
+            for c in vals_c:
+                info = information(theta, a, b, c)
+                eb = ebi(theta, a, b, c, se)
+                f.write(f"{theta},{a},{b},{c},{se},{info},{eb}\n")
+    f.close()
+
+
+#########################################################################
+#       Holds theta, and se, but varries a, b, and c randomly           #
+#########################################################################
+def vary_a_b_c_rand(file_name: str):
+    print("Parameters a, b, and c are randomly generated using normal dist.")
+    theta = float ( input("θ:\t"))
+    se = float ( input("std_err:\t"))
+    mu_a = float ( input("mean a:\t"))
+    sigma_a = float ( input("std_dev a:\t"))
+    mu_b = float (input ("mean b:\t"))
+    sigma_b = float (input ("std_dev b:\t"))
+    mu_c = float ( input ("mean c:\t"))
+    sigma_c = float ( input("std_dev c:\t"))
+    num = int ( input("Number of test points:\t"))
+    f = open(file_name, "w")
+    write_header(f)
+    for i in range(num):
+        a = rand.gauss(mu_a, sigma_a)
+        b = rand.gauss(mu_b, sigma_b)
+        c = rand.gauss(mu_c, sigma_c)
+        info = information(theta, a, b, c)
+        eb = ebi(theta, a, b, c, se)
+        f.write(f"{theta},{a},{b},{c},{se},{info},{eb}\n")
+    f.close()
+
+
 #########################################################################
 #       Helper function. Writes the first line of csv file              #
 #       *** Assumes file_obj has already been opened                    #
@@ -174,6 +231,8 @@ def print_menu():
     print("3. b varies")
     print("4. c varies")
     print("5. std_err varies")
+    print("6. a,b, and c vary")
+    print("7. a, b, and c vary randomly on a normal distribution")
     print("0. exit")
 
 def main():
@@ -194,9 +253,15 @@ def main():
             vary_c(file_name)
         elif choice == 5:
             vary_se(file_name)
+        elif choice == 6:
+            vary_a_b_c(file_name)
+        elif choice == 7:
+            vary_a_b_c_rand(file_name)
         else:
             print(f"{choice} is an invalid response")
         print("Completed.")
 
-
+"""plt.plot([1,2,3,4],[1,2,3,4])
+plt.ylabel('some numbers')
+plt.show()"""
 main()
