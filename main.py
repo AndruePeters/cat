@@ -16,6 +16,11 @@ from typing import Callable
 import random as rand
 import matplotlib.pyplot as plt
 
+
+class TestItem:
+    a: float
+    b: float
+    c: float
 #########################################################################
 #       Returns the information of the parameters                       #
 #########################################################################
