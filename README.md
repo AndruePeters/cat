@@ -19,3 +19,5 @@ Currently, this point will just be discarded.
 valid number that is very very very close to 0, but allows the computation to succeed.
 This was just a quick fix and a permanent fix will looked at in the future.~~
 This approach was scrapped, because `lim θ-> 0-: 1/I[θ*] != lim θ->0+: 1/I[θ*]`.
+
+Current approach is to return -999.999 if the I[theta*] == 0 and discard the result.
