@@ -52,8 +52,10 @@ def ebi(theta_hat: float, a: float, b: float, c: float, std_err: float) -> float
     ts = theta_star(a, b, c)
     weight = ebi_weight(theta_hat, a, b, c, std_err)[0]
     info_ts = information(ts, a, b, c)
+
+    # the limit does not exist at this point, so return a marker value
     if info_ts == 0:
-        info_ts = 0.00000000001
+        return -999.999
     return (1 + (1/info_ts)) * weight
 
 
